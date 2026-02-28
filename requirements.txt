@@ -1,0 +1,7 @@
+﻿fastapi
+uvicorn[standard]
+redis
+rq
+requests
+python-dotenv
+pydantic
