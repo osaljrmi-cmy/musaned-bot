@@ -1,11 +1,31 @@
-﻿
+﻿import os
+from rq import Queue
+from redis import Redis
 
-from rq import Queue # type: ignore
-import redis # type: ignore
-from app.settings import settings
 
-redis_conn = redis.Redis.from_url(settings.REDIS_URL)
-q = Queue("musaned", connection=redis_conn)
+QUEUE_NAME = "musaned"
 
-def enqueue_process_event(wa_id: str, text: str | None, image_media_id: str | None) -> None:
-    q.enqueue("app.jobs.tasks.process_event", wa_id, text, image_media_id, job_timeout=600)
+
+def get_queue() -> Queue:
+    redis_url = os.getenv("REDIS_URL")
+    if not redis_url:
+        raise RuntimeError("REDIS_URL is not set")
+
+    conn = Redis.from_url(redis_url)
+    return Queue(QUEUE_NAME, connection=conn)
+
+
+def enqueue_process_event(
+    wa_id: str,
+    text: str | None,
+    image_media_id: str | None
+) -> None:
+    queue = get_queue()
+
+    queue.enqueue(
+        "app.jobs.tasks.process_event",
+        wa_id,
+        text,
+        image_media_id,
+        job_timeout=600
+    )
