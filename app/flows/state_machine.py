@@ -21,38 +21,38 @@ def handle_event(wa_id: str, text: str | None, image_media_id: str | None) -> No
     # Image received
     if image_media_id:
         session.last_image_media_id = image_media_id
-        session.state = ""MENU""
+        session.state = "MENU"
         save_session(session)
         send_text(wa_id, templates.send_image_first_note())
         return
 
     # Text flow
     if not text:
-        if session.state == ""IDLE"":
+        if session.state == "IDLE":
             send_text(wa_id, templates.ask_send_image())
         return
 
     session.last_text = text
 
-    if session.state == ""IDLE"":
+    if session.state == "IDLE":
         send_text(wa_id, templates.ask_send_image())
         save_session(session)
         return
 
-    if session.state == ""MENU"":
+    if session.state == "MENU":
         choice = parse_choice(text)
         if not choice:
             send_text(wa_id, templates.invalid_choice())
             return
         session.selected_operation = choice
-        session.state = ""NEXT_ACTION""
+        session.state = "NEXT_ACTION"
         save_session(session)
-        send_text(wa_id, f""✅ تم اختيار العملية رقم {choice}.\\n\\n{templates.next_action_prompt()}"")
+        send_text(wa_id, f"✅ تم اختيار العملية رقم {choice}.\\n\\n{templates.next_action_prompt()}")
         return
 
-    if session.state == ""NEXT_ACTION"":
+    if session.state == "NEXT_ACTION":
         if is_yes(text):
-            session.state = ""MENU""
+            session.state = "MENU"
             save_session(session)
             send_text(wa_id, templates.menu_text())
             return
@@ -64,6 +64,6 @@ def handle_event(wa_id: str, text: str | None, image_media_id: str | None) -> No
         return
 
     # fallback
-    session.state = ""IDLE""
+    session.state = "IDLE"
     save_session(session)
     send_text(wa_id, templates.ask_send_image())
