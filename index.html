@@ -1,69 +1,120 @@
-<!doctype html>
-<html lang="ar" dir="rtl">
+<!DOCTYPE html>
+<html lang="ar">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Musaned Services</title>
-  <meta name="description" content="Musaned Services - دعم إداري وتقني لخدمات المنصات الإلكترونية." />
-  <style>
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; margin: 0; background:#0b0f17; color:#e8eefc; }
-    .wrap { max-width: 920px; margin: 0 auto; padding: 48px 20px; }
-    .card { background:#121a2a; border:1px solid #1f2a44; border-radius:16px; padding:24px; }
-    h1 { margin:0 0 8px; font-size: 34px; }
-    p { line-height:1.9; color:#cdd8f3; margin: 10px 0; }
-    .badge { display:inline-block; padding:6px 10px; border-radius:999px; background:#1b2742; border:1px solid #2a3a63; font-size: 13px; color:#cdd8f3; }
-    a { color:#8ab4ff; text-decoration:none; }
-    a:hover { text-decoration:underline; }
-    .grid { display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-top:16px; }
-    .item { background:#0f1626; border:1px solid #1f2a44; border-radius:14px; padding:16px; }
-    .muted { color:#9fb0d9; font-size: 14px; }
-    footer { margin-top:22px; color:#9fb0d9; font-size: 13px; }
-    @media (max-width: 720px){ .grid { grid-template-columns:1fr; } }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Musaned Services</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #0f172a;
+    color: #ffffff;
+    margin: 0;
+    padding: 0;
+    direction: rtl;
+}
+
+.container {
+    max-width: 1000px;
+    margin: auto;
+    padding: 40px 20px;
+}
+
+.card {
+    background: #1e293b;
+    padding: 30px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+}
+
+h1 {
+    font-size: 36px;
+    margin-bottom: 15px;
+}
+
+h2 {
+    margin-bottom: 10px;
+}
+
+.badge {
+    display: inline-block;
+    background: #1d4ed8;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    margin-bottom: 15px;
+}
+
+a {
+    color: #60a5fa;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+.footer {
+    text-align: center;
+    margin-top: 40px;
+    font-size: 14px;
+    color: #94a3b8;
+}
+</style>
 </head>
+
 <body>
-  <div class="wrap">
-    <div class="card">
-      <span class="badge">Independent Service Provider</span>
-      <h1>Musaned Services</h1>
-      <p>
-        Musaned Services هو مقدم خدمات مستقل يقدم دعمًا إداريًا وتقنيًا للأفراد للمساعدة في تنفيذ الإجراءات عبر المنصات الإلكترونية
-        ومعالجة المستندات المطلوبة للخدمة.
-      </p>
-      <p>
-        <strong>تنبيه:</strong> Musaned Services ليس جهة حكومية ولا يمثل أي جهة رسمية، وليس تابعًا لأي منظمة حكومية.
-      </p>
 
-      <div class="grid">
-        <div class="item">
-          <h3>الخدمات</h3>
-          <p class="muted">دعم إدخال البيانات، متابعة الطلبات، تجهيز المستندات، وخدمات مساندة لإتمام الإجراءات.</p>
-        </div>
-        <div class="item">
-          <h3>التواصل</h3>
-          <p class="muted">
-            البريد: <a href="mailto:osaljrmi@gmail.com">osaljrmi@gmail.com</a><br/>
-           الهاتف:
-<span dir="ltr">
-<a href="tel:+967780328072">+967 780 328 072</a>
-</span><br/>
-          اليمن-عدن
-          </p>
-        </div>
-      </div>
+<div class="container">
 
-      <p style="margin-top:18px">
-        اقرأ: <a href="./privacy.html">سياسة الخصوصية</a>
-      </p>
+<div class="card">
+<span class="badge">Independent Service Provider</span>
+<h1>Musaned Services</h1>
 
-      <footer>
-        © <span id="y"></span> Musaned Services
-      </footer>
-    </div>
-  </div>
+<p>
+Musaned Services هو مقدم خدمات مستقل يقدم دعماً إدارياً وتقنياً للأفراد للمساعدة في تنفيذ الإجراءات عبر المنصات الإلكترونية ومعالجة المستندات المطلوبة للخدمة.
+</p>
 
-  <script>
-    document.getElementById("y").textContent = new Date().getFullYear();
-  </script>
+<p>
+تنبيه: Musaned Services ليس جهة حكومية ولا يمثل أي جهة رسمية، وليس تابعاً لأي منظمة حكومية.
+</p>
+</div>
+
+<div class="card">
+<h2>الخدمات</h2>
+<p>
+دعم إدخال البيانات، متابعة الطلبات، تجهيز المستندات، وخدمات مساندة لإتمام الإجراءات الإلكترونية.
+</p>
+</div>
+
+<div class="card">
+<h2>التواصل</h2>
+<p>
+البريد: <a href="mailto:osaljrmi@gmail.com">osaljrmi@gmail.com</a><br>
+الهاتف: <a href="tel:+967780328072">+967 780 328 072</a><br>
+العنوان: اليمن - عدن
+</p>
+</div>
+
+<div class="card">
+<h2>About (English)</h2>
+<p>
+Musaned Services is an independent administrative support provider assisting individuals with documentation processing and online service workflows.
+</p>
+
+<p>
+We are not affiliated with any governmental authority or official organization.
+</p>
+</div>
+
+<div class="footer">
+<a href="privacy.html">سياسة الخصوصية</a> |
+<a href="terms.html">شروط الاستخدام</a>
+<br><br>
+Musaned Services © 2026
+</div>
+
+</div>
+
 </body>
 </html>
