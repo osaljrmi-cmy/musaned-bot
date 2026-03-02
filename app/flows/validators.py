@@ -1,16 +1,27 @@
-﻿def is_cancel(text: str) -> bool:
-    return text.strip() == "إلغاء"
+﻿def _norm(text: str) -> str:
+    return (text or "").strip().lower()
+
+
+def is_cancel(text: str) -> bool:
+    t = _norm(text)
+    return t in ["إلغاء", "الغاء", "cancel"]
+
 
 def is_yes(text: str) -> bool:
-    t = text.strip().lower()
-    return t in ["نعم", "✅ نعم", "yes", "y"]
+    t = _norm(text)
+    return t in ["نعم", "yes", "y", "1"]
+
 
 def is_no(text: str) -> bool:
-    t = text.strip().lower()
-    return t in ["لا", "❌ لا", "no", "n"]
+    t = _norm(text)
+    return t in ["لا", "no", "n", "2"]
 
-def parse_choice(text: str):
-    t = text.strip()
+
+def parse_choice(text: str) -> int | None:
+    """
+    Menu choice: 1..5
+    """
+    t = _norm(text)
     if t.isdigit():
         n = int(t)
         if 1 <= n <= 5:

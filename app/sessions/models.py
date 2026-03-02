@@ -1,6 +1,7 @@
 ﻿from pydantic import BaseModel, Field
 from typing import Any, Dict, Optional
 
+
 class Session(BaseModel):
     wa_id: str
     state: str = "IDLE"
@@ -10,3 +11,6 @@ class Session(BaseModel):
     data: Dict[str, Any] = Field(default_factory=dict)
     lock: bool = False
     updated_at: float = 0.0
+
+    class Config:
+        extra = "ignore"
