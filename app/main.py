@@ -1,4 +1,5 @@
 ﻿from fastapi import FastAPI, Request, HTTPException
+from fastapi.responses import PlainTextResponse
 from app.settings import settings
 from app.whatsapp.webhook_parser import parse_webhook
 from app.jobs.enqueue import enqueue_process_event
@@ -11,7 +12,7 @@ def health():
     return {"ok": True}
 
 
-@app.get("/webhook")
+@app.get("/webhook", response_class=PlainTextResponse)
 def verify_webhook(request: Request):
     params = dict(request.query_params)
 
@@ -19,8 +20,8 @@ def verify_webhook(request: Request):
     token = params.get("hub.verify_token")
     challenge = params.get("hub.challenge")
 
-    if mode == "subscribe" and token == settings.VERIFY_TOKEN:
-        return int(challenge)
+    if mode == "subscribe" and token == settings.VERIFY_TOKEN and challenge:
+        return challenge
 
     raise HTTPException(status_code=403, detail="Verification failed")
 
@@ -30,16 +31,17 @@ async def webhook(request: Request):
     try:
         payload = await request.json()
     except Exception:
-        # لا نكسر الـ webhook حتى لو جاء body غير JSON
         return {"ok": True}
 
     wa_id, text, image_media_id = parse_webhook(payload)
 
-    # status updates أو events بدون messages
     if not wa_id:
         return {"ok": True}
 
-    print(f"[webhook] received event wa_id={wa_id} type={'image' if image_media_id else 'text'}", flush=True)
+    print(
+        f"[webhook] received event wa_id={wa_id} type={'image' if image_media_id else 'text'}",
+        flush=True,
+    )
 
     enqueue_process_event(
         wa_id=wa_id,
@@ -50,7 +52,6 @@ async def webhook(request: Request):
     return {"ok": True}
 
 
-# (اختياري) Endpoint داخلي للاختبار بدون Meta
 @app.post("/debug/enqueue")
 async def debug_enqueue(request: Request):
     body = await request.json()
@@ -58,5 +59,9 @@ async def debug_enqueue(request: Request):
     text = body.get("text")
     image_media_id = body.get("image_media_id")
 
-    enqueue_process_event(wa_id=wa_id, text=text, image_media_id=image_media_id)
+    enqueue_process_event(
+        wa_id=wa_id,
+        text=text,
+        image_media_id=image_media_id,
+    )
     return {"ok": True, "enqueued_for": wa_id}
