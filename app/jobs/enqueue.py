@@ -1,6 +1,7 @@
 ﻿import os
 from rq import Queue
 from redis import Redis
+from app.jobs.tasks import process_event
 
 
 QUEUE_NAME = "musaned"
@@ -23,9 +24,9 @@ def enqueue_process_event(
     queue = get_queue()
 
     queue.enqueue(
-        "app.jobs.tasks.process_event",
-        wa_id,
-        text,
-        image_media_id,
-        job_timeout=600
+        process_event,
+        wa_id=wa_id,
+        text=text,
+        image_media_id=image_media_id,
+        job_timeout=600,
     )
