@@ -12,5 +12,8 @@ class Session(BaseModel):
     lock: bool = False
     updated_at: float = 0.0
 
+    pending_musaned_status: Optional[str] = None
+    pending_musaned_note: Optional[str] = None
+
     class Config:
         extra = "ignore"
