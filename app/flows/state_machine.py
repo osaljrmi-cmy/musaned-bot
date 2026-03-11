@@ -17,7 +17,13 @@ from app.musaned.constants import (
     OTP_REQUIRED,
     LOGIN_SUCCESS,
 )
-from app.musaned.pending import save_pending_action, load_pending_action, clear_pending_action
+from app.musaned.admin_state import (
+    save_admin_pending_session,
+    load_admin_pending_session,
+    clear_admin_pending_session,
+    mark_supervisor_done,
+    set_otp_code,
+)
 
 
 def _handle_supervisor_message(wa_id: str, text: str | None) -> bool:
@@ -27,27 +33,27 @@ def _handle_supervisor_message(wa_id: str, text: str | None) -> bool:
     if wa_id != settings.SUPERVISOR_WA_ID:
         return False
 
-    pending = load_pending_action()
+    pending = load_admin_pending_session()
     if not pending:
         safe_send_text(wa_id, templates.no_pending_supervisor_action())
         return True
 
     if text and is_done(text):
-        clear_pending_action()
-        safe_send_text(wa_id, templates.supervisor_done_ack())
+        mark_supervisor_done()
+        safe_send_text(wa_id, templates.supervisor_captcha_done())
         safe_send_text(
             pending["employee_wa_id"],
-            "تم استلام تأكيد المشرف بحل الكابتشا. سنربط استكمال التنفيذ في الخطوة التالية."
+            "تم استلام تأكيد المشرف. سنربط الاستئناف الفعلي في الخطوة التالية."
         )
         return True
 
     otp_code = parse_otp_command(text or "")
     if otp_code:
-        clear_pending_action()
-        safe_send_text(wa_id, templates.supervisor_otp_ack(otp_code))
+        set_otp_code(otp_code)
+        safe_send_text(wa_id, templates.supervisor_otp_saved(otp_code))
         safe_send_text(
             pending["employee_wa_id"],
-            f"تم استلام رمز التحقق {otp_code}. سنربط استكمال التنفيذ في الخطوة التالية."
+            f"تم استلام رمز التحقق {otp_code}. سنربط الاستئناف الفعلي في الخطوة التالية."
         )
         return True
 
@@ -72,10 +78,10 @@ def _start_musaned_session_flow(wa_id: str, session) -> bool:
         session.pending_musaned_status = CAPTCHA_REQUIRED
         save_session(session)
 
-        save_pending_action(
+        save_admin_pending_session(
             employee_wa_id=wa_id,
-            action_type=CAPTCHA_REQUIRED,
             selected_operation=session.selected_operation,
+            status=CAPTCHA_REQUIRED,
             note="Supervisor must solve captcha",
         )
 
@@ -93,10 +99,10 @@ def _start_musaned_session_flow(wa_id: str, session) -> bool:
         session.pending_musaned_status = OTP_REQUIRED
         save_session(session)
 
-        save_pending_action(
+        save_admin_pending_session(
             employee_wa_id=wa_id,
-            action_type=OTP_REQUIRED,
             selected_operation=session.selected_operation,
+            status=OTP_REQUIRED,
             note="Supervisor must send OTP",
         )
 
@@ -119,16 +125,19 @@ def handle_event(wa_id: str, text: str | None, image_media_id: str | None) -> No
 
     session = get_session(wa_id)
 
+    # Global cancel
     if text and is_cancel(text):
         release_lock(wa_id)
         reset_session(wa_id)
         safe_send_text(wa_id, templates.cancelled())
         return
 
+    # Busy lock
     if session.lock:
         safe_send_text(wa_id, templates.busy())
         return
 
+    # Image received
     if image_media_id:
         session.last_image_media_id = image_media_id
         session.state = "MENU"
@@ -137,25 +146,33 @@ def handle_event(wa_id: str, text: str | None, image_media_id: str | None) -> No
         safe_send_text(wa_id, templates.send_image_first_note())
         return
 
+    # No text and no image
     if not text:
         if session.state == "IDLE":
             safe_send_text(wa_id, templates.ask_send_image())
         elif session.state == "WAITING_NEW_IMAGE":
             safe_send_text(wa_id, templates.replace_image_prompt())
+        elif session.state == "WAITING_MUSANED_CAPTCHA":
+            safe_send_text(wa_id, "ما زلنا بانتظار تدخل المشرف لحل الكابتشا.")
+        elif session.state == "WAITING_MUSANED_OTP":
+            safe_send_text(wa_id, "ما زلنا بانتظار إدخال رمز التحقق من المشرف.")
         return
 
     session.last_text = text
 
+    # Default state
     if session.state == "IDLE":
         safe_send_text(wa_id, templates.ask_send_image())
         save_session(session)
         return
 
+    # Replace image state
     if session.state == "WAITING_NEW_IMAGE":
         safe_send_text(wa_id, templates.replace_image_prompt())
         save_session(session)
         return
 
+    # Waiting for supervisor states
     if session.state == "WAITING_MUSANED_CAPTCHA":
         safe_send_text(wa_id, "ما زلنا بانتظار تدخل المشرف لحل الكابتشا.")
         return
@@ -164,6 +181,7 @@ def handle_event(wa_id: str, text: str | None, image_media_id: str | None) -> No
         safe_send_text(wa_id, "ما زلنا بانتظار إدخال رمز التحقق من المشرف.")
         return
 
+    # Menu state
     if session.state == "MENU":
         choice = parse_choice(text)
         if not choice:
@@ -173,7 +191,14 @@ def handle_event(wa_id: str, text: str | None, image_media_id: str | None) -> No
         session.selected_operation = choice
         save_session(session)
 
+        # 6) Passport extraction only
         if choice == 6:
+            if not session.last_image_media_id:
+                safe_send_text(wa_id, templates.no_image_yet())
+                session.state = "IDLE"
+                save_session(session)
+                return
+
             session.state = "NEXT_ACTION"
             save_session(session)
 
@@ -186,6 +211,7 @@ def handle_event(wa_id: str, text: str | None, image_media_id: str | None) -> No
             )
             return
 
+        # 2) Delete candidate
         if choice == 2:
             session.state = "NEXT_ACTION"
             save_session(session)
@@ -200,6 +226,7 @@ def handle_event(wa_id: str, text: str | None, image_media_id: str | None) -> No
                 )
             return
 
+        # 1,3,4,5) Operations requiring Musaned
         if choice in (1, 3, 4, 5):
             session.state = "NEXT_ACTION"
             save_session(session)
@@ -214,6 +241,7 @@ def handle_event(wa_id: str, text: str | None, image_media_id: str | None) -> No
                 )
             return
 
+    # Next action prompt
     if session.state == "NEXT_ACTION":
         if is_yes(text):
             session.state = "MENU"
@@ -229,6 +257,7 @@ def handle_event(wa_id: str, text: str | None, image_media_id: str | None) -> No
         safe_send_text(wa_id, templates.next_action_prompt())
         return
 
+    # Fallback
     session.state = "IDLE"
     save_session(session)
     safe_send_text(wa_id, templates.ask_send_image())
