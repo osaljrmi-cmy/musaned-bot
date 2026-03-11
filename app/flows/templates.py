@@ -136,3 +136,18 @@ def supervisor_otp_ack(code: str) -> str:
 
 def no_pending_supervisor_action() -> str:
     return "لا توجد عملية معلقة حاليًا بانتظار المشرف."
+
+def supervisor_action_saved() -> str:
+    return "تم حفظ حالة التحقق للمشرف بنجاح."
+
+
+def supervisor_captcha_done() -> str:
+    return "تم تسجيل أن المشرف أنهى حل الكابتشا."
+
+
+def supervisor_otp_saved(code: str) -> str:
+    return f"تم حفظ رمز التحقق: {code}"
+
+
+def employee_waiting_supervisor() -> str:
+    return "⏳ العملية متوقفة مؤقتًا بانتظار تدخل المشرف."
