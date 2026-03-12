@@ -67,7 +67,7 @@ def _handle_supervisor_message(wa_id: str, text: str | None) -> bool:
 def _start_musaned_session_flow(wa_id: str, session) -> bool:
     safe_send_text(wa_id, templates.musaned_session_expired())
 
-    result = ensure_musaned_session(headless=False)
+    result = ensure_musaned_session(headless=True)
 
     if result in (SESSION_OK, LOGIN_SUCCESS):
         safe_send_text(wa_id, templates.musaned_session_ready())
